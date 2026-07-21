@@ -1,17 +1,41 @@
 const routesTable = document.getElementById("routes-table");
+const routesTableWrap = document.getElementById("routes-table-wrap");
 const routesEmpty = document.getElementById("routes-empty");
+const routesLoading = document.getElementById("routes-loading");
 const routeForm = document.getElementById("route-form");
-const formError = document.getElementById("form-error");
 const refreshButton = document.getElementById("refresh-routes");
+const alertBox = document.getElementById("alert");
+const routeCount = document.getElementById("route-count");
 
-function showError(message) {
-  formError.textContent = message;
-  formError.classList.remove("hidden");
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 
-function clearError() {
-  formError.textContent = "";
-  formError.classList.add("hidden");
+function showAlert(message, type = "error") {
+  alertBox.textContent = message;
+  alertBox.className =
+    type === "success"
+      ? "rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+      : "rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700";
+  alertBox.classList.remove("hidden");
+}
+
+function clearAlert() {
+  alertBox.textContent = "";
+  alertBox.classList.add("hidden");
+}
+
+function setLoading(isLoading) {
+  routesLoading.classList.toggle("hidden", !isLoading);
+}
+
+function updateRouteCount(count) {
+  routeCount.textContent = `${count} route${count === 1 ? "" : "s"}`;
+  routeCount.classList.remove("hidden");
 }
 
 async function api(path, options = {}) {
@@ -35,40 +59,50 @@ async function api(path, options = {}) {
   return response.json();
 }
 
+function statusBadge(enabled) {
+  return enabled
+    ? '<span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">Enabled</span>'
+    : '<span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">Disabled</span>';
+}
+
 function renderRoutes(routes) {
   routesTable.innerHTML = "";
+  updateRouteCount(routes.length);
 
   if (!routes.length) {
+    routesTableWrap.classList.add("hidden");
     routesEmpty.classList.remove("hidden");
     return;
   }
 
   routesEmpty.classList.add("hidden");
+  routesTableWrap.classList.remove("hidden");
 
   for (const route of routes) {
     const row = document.createElement("tr");
+    row.className = "hover:bg-slate-50";
 
     row.innerHTML = `
-      <td class="px-3 py-3 font-medium">${route.id}</td>
-      <td class="px-3 py-3 font-mono text-xs">${route.path}</td>
-      <td class="px-3 py-3 font-mono text-xs">${route.target}</td>
-      <td class="px-3 py-3">${route.enabled ? "Yes" : "No"}</td>
-      <td class="px-3 py-3">${route.stripPrefix ? "Yes" : "No"}</td>
-      <td class="px-3 py-3">
-        <div class="flex gap-2">
+      <td class="px-5 py-3 font-medium sm:px-6">${escapeHtml(route.id)}</td>
+      <td class="px-5 py-3 font-mono text-xs text-slate-700 sm:px-6">${escapeHtml(route.path)}</td>
+      <td class="px-5 py-3 font-mono text-xs text-slate-700 sm:px-6">${escapeHtml(route.target)}</td>
+      <td class="px-5 py-3 sm:px-6">${statusBadge(route.enabled)}</td>
+      <td class="px-5 py-3 text-slate-600 sm:px-6">${route.stripPrefix ? "Yes" : "No"}</td>
+      <td class="px-5 py-3 sm:px-6">
+        <div class="flex flex-wrap gap-2">
           <button
             type="button"
             data-action="toggle"
-            data-id="${route.id}"
-            class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
+            data-id="${escapeHtml(route.id)}"
+            class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100"
           >
             ${route.enabled ? "Disable" : "Enable"}
           </button>
           <button
             type="button"
             data-action="delete"
-            data-id="${route.id}"
-            class="rounded border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+            data-id="${escapeHtml(route.id)}"
+            class="rounded-lg border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50"
           >
             Delete
           </button>
@@ -81,15 +115,26 @@ function renderRoutes(routes) {
 }
 
 async function loadRoutes() {
-  const data = await api("/api/routes");
-  renderRoutes(data.routes);
+  setLoading(true);
+  clearAlert();
+
+  try {
+    const data = await api("/api/routes");
+    renderRoutes(data.routes);
+  } catch (error) {
+    showAlert(error.message);
+  } finally {
+    setLoading(false);
+  }
 }
 
 routeForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  clearError();
+  clearAlert();
 
   const formData = new FormData(routeForm);
+  const submitButton = routeForm.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
 
   try {
     await api("/api/routes", {
@@ -104,9 +149,12 @@ routeForm.addEventListener("submit", async (event) => {
     });
 
     routeForm.reset();
+    showAlert("Route added successfully.", "success");
     await loadRoutes();
   } catch (error) {
-    showError(error.message);
+    showAlert(error.message);
+  } finally {
+    submitButton.disabled = false;
   }
 });
 
@@ -127,6 +175,7 @@ routesTable.addEventListener("click", async (event) => {
       }
 
       await api(`/api/routes/${id}`, { method: "DELETE" });
+      showAlert("Route deleted.", "success");
     }
 
     if (action === "toggle") {
@@ -141,16 +190,18 @@ routesTable.addEventListener("click", async (event) => {
         method: "PATCH",
         body: JSON.stringify({ enabled: !route.enabled }),
       });
+
+      showAlert(`Route ${route.enabled ? "disabled" : "enabled"}.`, "success");
     }
 
     await loadRoutes();
   } catch (error) {
-    showError(error.message);
+    showAlert(error.message);
   }
 });
 
 refreshButton.addEventListener("click", () => {
-  loadRoutes().catch((error) => showError(error.message));
+  loadRoutes();
 });
 
-loadRoutes().catch((error) => showError(error.message));
+loadRoutes();

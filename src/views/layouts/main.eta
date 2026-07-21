@@ -1,16 +1,13 @@
 <!doctype html>
-
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title><%= it.title %></title>
-
     <link rel="stylesheet" href="/public/css/output.css" />
   </head>
-
-  <body class="bg-gray-50 text-gray-900">
-    <~ it.body ~>
+  <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    <%~ it.body %>
+    <script src="/public/js/dashboard.js" defer></script>
   </body>
 </html>
