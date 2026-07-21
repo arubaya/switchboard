@@ -5,13 +5,13 @@ export const AppConfigSchema = z.object({
   port: z.coerce.number().int().positive().default(8080),
 });
 
+export const UserSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+});
+
 export const UsersConfigSchema = z.object({
-  users: z.array(
-    z.object({
-      username: z.string().min(1),
-      password: z.string().min(1),
-    }),
-  ),
+  users: z.array(UserSchema).min(1),
 });
 
 export const RouteSchema = z.object({
@@ -27,6 +27,7 @@ export const RoutesConfigSchema = z.object({
 });
 
 export type AppConfig = z.infer<typeof AppConfigSchema>;
+export type User = z.infer<typeof UserSchema>;
 export type UsersConfig = z.infer<typeof UsersConfigSchema>;
 export type Route = z.infer<typeof RouteSchema>;
 export type RoutesConfig = z.infer<typeof RoutesConfigSchema>;

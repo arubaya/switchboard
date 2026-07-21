@@ -1,20 +1,14 @@
 import fp from "fastify-plugin";
 import basicAuth from "@fastify/basic-auth";
 
-import { loadUsersConfig } from "../modules/config/loader.js";
+import { usersStore } from "../modules/config/users-store.js";
 
 export default fp(async (app) => {
-  const { users } = await loadUsersConfig();
-
-  const credentials = new Map(
-    users.map((user) => [user.username, user.password]),
-  );
+  await usersStore.load();
 
   await app.register(basicAuth, {
     validate: async (username, password) => {
-      const expected = credentials.get(username);
-
-      if (!expected || expected !== password) {
+      if (!usersStore.validate(username, password)) {
         throw new Error("Unauthorized");
       }
     },

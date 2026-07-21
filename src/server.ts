@@ -1,22 +1,36 @@
+import type { FastifyInstance } from "fastify";
+
 import { buildApp } from "./app.js";
-import { loadAppConfig } from "./modules/config/loader.js";
+import { appConfigStore } from "./modules/config/app-store.js";
+import { setRestartHandler } from "./shared/restart.js";
 
-async function bootstrap() {
-  const appConfig = await loadAppConfig();
-  const app = await buildApp();
+let app: Awaited<ReturnType<typeof buildApp>> | null = null;
 
-  try {
-    await app.listen({
-      host: appConfig.host,
-      port: appConfig.port,
-    });
+async function start(): Promise<void> {
+  const config = await appConfigStore.load();
+  app = await buildApp();
 
-    app.log.info("Switchboard started");
-    app.log.info(`http://${appConfig.host}:${appConfig.port}`);
-  } catch (error) {
-    app.log.error(error);
-    process.exit(1);
-  }
+  await app.listen({
+    host: config.host,
+    port: config.port,
+  });
+
+  app.log.info("Switchboard started");
+  app.log.info(`http://${config.host}:${config.port}`);
 }
 
-bootstrap();
+setRestartHandler(async () => {
+  if (!app) {
+    return;
+  }
+
+  app.log.info("Restarting server after config change");
+  await app.close();
+  app = null;
+  await start();
+});
+
+start().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
