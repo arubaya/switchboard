@@ -4,22 +4,12 @@ export function isPrivilegedPort(port: number): boolean {
   return port >= 1 && port <= PRIVILEGED_PORT_MAX;
 }
 
-export function canBindPrivilegedPort(): boolean {
-  return process.getuid?.() === 0;
-}
-
 export function privilegedPortMessage(port: number): string {
   return (
     `Port ${port} requires elevated privileges on Unix. ` +
-    "Run with sudo, grant cap_net_bind_service to node (Linux), " +
+    "Run with sudo, grant cap_net_bind_service to node (Linux/Docker), " +
     "or bind a higher port and forward external traffic (pfctl/iptables)."
   );
-}
-
-export function assertCanBindPort(port: number): void {
-  if (isPrivilegedPort(port) && !canBindPrivilegedPort()) {
-    throw new Error(privilegedPortMessage(port));
-  }
 }
 
 export function wrapListenError(error: unknown, port: number): Error {

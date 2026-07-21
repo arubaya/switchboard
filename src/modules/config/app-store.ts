@@ -1,10 +1,5 @@
 import { writeFile } from "node:fs/promises";
 
-import {
-  canBindPrivilegedPort,
-  isPrivilegedPort,
-  privilegedPortMessage,
-} from "../../shared/bind-port.js";
 import { loadAppConfig } from "./loader.js";
 import { AppConfigSchema, type AppConfig } from "./schemas.js";
 import { appConfigPath } from "../../shared/paths.js";
@@ -27,11 +22,6 @@ export class AppConfigStore {
 
   async save(input: AppConfig): Promise<AppConfig> {
     const config = AppConfigSchema.parse(input);
-
-    if (isPrivilegedPort(config.port) && !canBindPrivilegedPort()) {
-      throw new Error(privilegedPortMessage(config.port));
-    }
-
     this.config = config;
 
     await writeFile(
