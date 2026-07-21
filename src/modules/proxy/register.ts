@@ -13,9 +13,12 @@ const RESERVED_PATHS = [
   "/health",
   "/api/routes",
   "/api/settings",
+  "/api/ssl",
   "/public",
   "/logout",
   "/settings",
+  "/ssl",
+  "/.well-known",
 ];
 
 const proxyState = {

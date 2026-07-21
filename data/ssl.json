@@ -1,0 +1,17 @@
+{
+  "enabled": false,
+  "httpPort": 8080,
+  "httpsPort": 8443,
+  "redirectHttpToHttps": true,
+  "provider": "custom",
+  "custom": {
+    "certificatePath": "",
+    "privateKeyPath": ""
+  },
+  "letsencrypt": {
+    "email": "",
+    "domains": [],
+    "staging": false,
+    "autoRenew": true
+  }
+}

@@ -2,31 +2,30 @@ import type { FastifyInstance } from "fastify";
 
 import { buildApp } from "./app.js";
 import { appConfigStore } from "./modules/config/app-store.js";
+import { sslStore } from "./modules/ssl/ssl-store.js";
 import { setRestartHandler } from "./shared/restart.js";
+import { startRuntime, type RuntimeServers } from "./shared/runtime.js";
 
 let app: Awaited<ReturnType<typeof buildApp>> | null = null;
+let runtime: RuntimeServers | null = null;
 
 async function start(): Promise<void> {
   const config = await appConfigStore.load();
-  app = await buildApp();
+  await sslStore.load();
 
-  await app.listen({
-    host: config.host,
-    port: config.port,
-  });
+  app = await buildApp();
+  runtime = await startRuntime(app, config);
 
   app.log.info("Switchboard started");
-  app.log.info(`http://${config.host}:${config.port}`);
 }
 
 setRestartHandler(async () => {
-  if (!app) {
-    return;
+  if (runtime) {
+    await runtime.close();
   }
 
-  app.log.info("Restarting server after config change");
-  await app.close();
   app = null;
+  runtime = null;
   await start();
 });
 

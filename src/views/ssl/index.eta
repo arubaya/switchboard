@@ -1,0 +1,196 @@
+<%~ include("../partials/navbar", it) %>
+
+<main class="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+  <div
+    id="alert"
+    class="hidden rounded-lg border px-4 py-3 text-sm"
+    role="alert"
+  ></div>
+
+  <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <div class="mb-5 flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 class="text-base font-semibold">Certificate status</h2>
+        <p class="mt-1 text-sm text-slate-500">Current HTTPS configuration overview.</p>
+      </div>
+      <button
+        id="reload-ssl"
+        type="button"
+        class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+      >
+        Reload HTTPS
+      </button>
+    </div>
+
+    <div id="status-loading" class="py-8 text-center text-sm text-slate-500">
+      Loading certificate status...
+    </div>
+
+    <div id="status-grid" class="hidden grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+  </section>
+
+  <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <div class="mb-5">
+      <h2 class="text-base font-semibold">SSL configuration</h2>
+      <p class="mt-1 text-sm text-slate-500">
+        Configure HTTPS listeners and certificate provider.
+      </p>
+    </div>
+
+    <form id="ssl-form" class="space-y-6">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
+          <input name="enabled" type="checkbox" class="h-4 w-4 rounded border-slate-300" />
+          <span>Enable HTTPS</span>
+        </label>
+
+        <label class="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
+          <input
+            name="redirectHttpToHttps"
+            type="checkbox"
+            class="h-4 w-4 rounded border-slate-300"
+          />
+          <span>Redirect HTTP to HTTPS</span>
+        </label>
+
+        <label class="block text-sm">
+          <span class="mb-1.5 block font-medium text-slate-700">HTTP port</span>
+          <input
+            name="httpPort"
+            type="number"
+            min="1"
+            max="65535"
+            required
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+        </label>
+
+        <label class="block text-sm">
+          <span class="mb-1.5 block font-medium text-slate-700">HTTPS port</span>
+          <input
+            name="httpsPort"
+            type="number"
+            min="1"
+            max="65535"
+            required
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+        </label>
+
+        <label class="block text-sm sm:col-span-2">
+          <span class="mb-1.5 block font-medium text-slate-700">Provider</span>
+          <select
+            name="provider"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          >
+            <option value="custom">Custom certificate</option>
+            <option value="letsencrypt">Let's Encrypt</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="provider-custom" class="grid gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
+        <h3 class="text-sm font-semibold text-slate-700 sm:col-span-2">Custom certificate</h3>
+
+        <label class="block text-sm sm:col-span-2">
+          <span class="mb-1.5 block font-medium text-slate-700">Certificate path</span>
+          <input
+            name="customCertificatePath"
+            placeholder="data/certs/custom/fullchain.pem"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          />
+        </label>
+
+        <label class="block text-sm sm:col-span-2">
+          <span class="mb-1.5 block font-medium text-slate-700">Private key path</span>
+          <input
+            name="customPrivateKeyPath"
+            placeholder="data/certs/custom/privkey.pem"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          />
+        </label>
+      </div>
+
+      <div
+        id="provider-letsencrypt"
+        class="hidden space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4"
+      >
+        <h3 class="text-sm font-semibold text-slate-700">Let's Encrypt</h3>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="block text-sm sm:col-span-2">
+            <span class="mb-1.5 block font-medium text-slate-700">Email</span>
+            <input
+              name="letsencryptEmail"
+              type="email"
+              placeholder="admin@example.com"
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label class="block text-sm sm:col-span-2">
+            <span class="mb-1.5 block font-medium text-slate-700">Domains</span>
+            <textarea
+              name="letsencryptDomains"
+              rows="3"
+              placeholder="example.com&#10;www.example.com"
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            ></textarea>
+            <span class="mt-1 block text-xs text-slate-500">One domain per line.</span>
+          </label>
+
+          <label class="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              name="letsencryptStaging"
+              type="checkbox"
+              class="h-4 w-4 rounded border-slate-300"
+            />
+            <span>Staging mode</span>
+          </label>
+
+          <label class="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              name="letsencryptAutoRenew"
+              type="checkbox"
+              class="h-4 w-4 rounded border-slate-300"
+            />
+            <span>Auto renew</span>
+          </label>
+        </div>
+
+        <div class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          HTTP port must be <strong>80</strong> for HTTP-01 challenge. Certificates are stored in
+          <code class="text-xs">data/certs/letsencrypt/</code>.
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button
+            id="request-cert"
+            type="button"
+            class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
+          >
+            Request certificate
+          </button>
+          <button
+            id="renew-cert"
+            type="button"
+            class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
+          >
+            Renew certificate
+          </button>
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        Saving SSL configuration or reloading HTTPS will restart Switchboard.
+      </div>
+
+      <button
+        type="submit"
+        class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+      >
+        Save configuration
+      </button>
+    </form>
+  </section>
+</main>
