@@ -6,6 +6,7 @@ import type { Route } from "../config/schemas.js";
 import {
   getEnabledRoutes,
   getRewritePrefix,
+  resolveTargetHost,
   sortRoutesBySpecificity,
 } from "./utils.js";
 
@@ -50,13 +51,28 @@ function buildUpstreamUrl(request: FastifyRequest, route: Route): string {
   const [pathname, search = ""] = request.url.split("?");
   const query = search ? `?${search}` : "";
   const rewritePrefix = getRewritePrefix(route);
+  const target = resolveTargetHost(route.target);
 
   if (rewritePrefix === "/") {
     const stripped = pathname.slice(route.path.length) || "/";
-    return new URL(`${stripped}${query}`, route.target).toString();
+    return new URL(`${stripped}${query}`, target).toString();
   }
 
-  return new URL(`${pathname}${query}`, route.target).toString();
+  return new URL(`${pathname}${query}`, target).toString();
+}
+
+function upstreamErrorDetail(error: unknown, target: string): string {
+  let current = error;
+
+  while (current instanceof Error) {
+    if (current.message && !current.message.includes("FST_REPLY_FROM")) {
+      return current.message;
+    }
+
+    current = current.cause;
+  }
+
+  return `Could not connect to ${target}`;
 }
 
 async function proxyHandler(
@@ -79,10 +95,7 @@ async function proxyHandler(
 
   await reply.from(upstream, {
     onError(_reply, { error }) {
-      const detail =
-        error.message ||
-        ("code" in error && typeof error.code === "string" ? error.code : "") ||
-        `Could not connect to ${route.target}`;
+      const detail = upstreamErrorDetail(error, route.target);
 
       request.log.error(
         { err: error, upstream, routeId: route.id, target: route.target },
@@ -94,11 +107,6 @@ async function proxyHandler(
           error: "Bad Gateway",
           message: detail,
           upstream,
-          hint:
-            route.target.includes("localhost") ||
-            route.target.includes("127.0.0.1")
-              ? "From Docker, use host.docker.internal instead of localhost"
-              : undefined,
         });
       }
     },

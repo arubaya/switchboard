@@ -10,6 +10,7 @@ services:
       - ./data:/app/data
     environment:
       NODE_ENV: production
+      SWITCHBOARD_UPSTREAM_HOST: host.docker.internal
     cap_add:
       - NET_BIND_SERVICE
     extra_hosts:
