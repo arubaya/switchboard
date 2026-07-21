@@ -124,16 +124,21 @@ async function proxyHandler(
 
   return reply.from(upstream, {
     ...(forwardBody ? { body: request.body } : {}),
-    rewriteRequestHeaders: (_request, headers) => ({
-      ...headers,
-      "x-forwarded-for": String(
-        headers["x-forwarded-for"]
-          ? `${headers["x-forwarded-for"]}, ${request.ip}`
-          : request.ip,
-      ),
-      "x-forwarded-proto": forwardedProto(request),
-      "x-forwarded-host": String(request.headers.host ?? ""),
-    }),
+    rewriteRequestHeaders: (_request, headers) => {
+      const publicHost = String(request.headers.host ?? "");
+
+      return {
+        ...headers,
+        host: publicHost || headers.host,
+        "x-forwarded-for": String(
+          headers["x-forwarded-for"]
+            ? `${headers["x-forwarded-for"]}, ${request.ip}`
+            : request.ip,
+        ),
+        "x-forwarded-proto": forwardedProto(request),
+        "x-forwarded-host": publicHost,
+      };
+    },
     rewriteHeaders(headers: IncomingHttpHeaders): IncomingHttpHeaders {
       let next = headers;
 
