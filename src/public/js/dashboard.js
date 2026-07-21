@@ -74,12 +74,24 @@ function statusBadge(enabled) {
     : '<span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">Disabled</span>';
 }
 
+function parseCorsOrigins(value) {
+  return String(value ?? "")
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function formatCorsOrigins(origins) {
+  return (origins ?? []).join("\n");
+}
+
 function openEditModal(route) {
   editRouteForm.elements.id.value = route.id;
   editRouteForm.elements.path.value = route.path;
   editRouteForm.elements.target.value = route.target;
   editRouteForm.elements.enabled.checked = route.enabled;
   editRouteForm.elements.stripPrefix.checked = route.stripPrefix;
+  editRouteForm.elements.corsOrigins.value = formatCorsOrigins(route.corsOrigins);
 
   editModal.classList.remove("hidden");
   editModal.classList.add("flex");
@@ -182,6 +194,7 @@ routeForm.addEventListener("submit", async (event) => {
         target: String(formData.get("target")),
         enabled: formData.has("enabled"),
         stripPrefix: formData.has("stripPrefix"),
+        corsOrigins: parseCorsOrigins(formData.get("corsOrigins")),
       }),
     });
 
@@ -212,6 +225,7 @@ editRouteForm.addEventListener("submit", async (event) => {
         target: String(formData.get("target")),
         enabled: formData.has("enabled"),
         stripPrefix: formData.has("stripPrefix"),
+        corsOrigins: parseCorsOrigins(formData.get("corsOrigins")),
       }),
     });
 

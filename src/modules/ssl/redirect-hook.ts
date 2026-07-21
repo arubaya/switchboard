@@ -2,6 +2,10 @@ import type { FastifyInstance } from "fastify";
 
 import { sslStore } from "./ssl-store.js";
 
+function publicPortSuffix(port: number, defaultPort: number): string {
+  return port === defaultPort ? "" : `:${port}`;
+}
+
 export function registerSslRedirectHook(app: FastifyInstance): void {
   app.addHook("onRequest", async (request, reply) => {
     const config = sslStore.get();
@@ -24,7 +28,7 @@ export function registerSslRedirectHook(app: FastifyInstance): void {
     }
 
     const host = request.headers.host?.split(":")[0] ?? request.hostname;
-    const target = `https://${host}:${config.httpsPort}${request.url}`;
+    const target = `https://${host}${publicPortSuffix(config.httpsPort, 443)}${request.url}`;
 
     return reply.redirect(target);
   });

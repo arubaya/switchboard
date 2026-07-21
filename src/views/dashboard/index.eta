@@ -68,6 +68,19 @@
         <span>Strip prefix when forwarding</span>
       </label>
 
+      <label class="block text-sm sm:col-span-2">
+        <span class="mb-1.5 block font-medium text-slate-700">CORS origins</span>
+        <textarea
+          name="corsOrigins"
+          rows="2"
+          placeholder="https://app.example.com"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none ring-slate-300 focus:border-slate-400 focus:ring-2"
+        ></textarea>
+        <span class="mt-1 block text-xs text-slate-500">
+          One origin per line. Leave empty for same-origin only.
+        </span>
+      </label>
+
       <div class="sm:col-span-2">
         <button
           type="submit"
@@ -188,7 +201,17 @@
         <span>Strip prefix when forwarding</span>
       </label>
 
-      <div class="flex justify-end gap-2 pt-2">
+      <label class="block text-sm">
+        <span class="mb-1.5 block font-medium text-slate-700">CORS origins</span>
+        <textarea
+          name="corsOrigins"
+          rows="2"
+          placeholder="https://app.example.com"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none ring-slate-300 focus:border-slate-400 focus:ring-2"
+        ></textarea>
+      </label>
+
+      <div class="flex justify-end gap-2 pt-2 sm:col-span-2">
         <button
           id="edit-modal-cancel"
           type="button"

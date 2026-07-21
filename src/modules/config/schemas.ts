@@ -20,6 +20,7 @@ export const RouteSchema = z.object({
   path: z.string().startsWith("/"),
   target: z.string().url(),
   stripPrefix: z.boolean().default(true),
+  corsOrigins: z.array(z.string().min(1)).default([]),
 });
 
 export const RoutesConfigSchema = z.object({

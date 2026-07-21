@@ -1,8 +1,14 @@
 import fp from "fastify-plugin";
 import replyFrom from "@fastify/reply-from";
+import type { IncomingHttpHeaders } from "node:http";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
 import type { Route } from "../config/schemas.js";
+import {
+  applyCorsHeaders,
+  mergeCorsResponseHeaders,
+  resolveCorsOrigin,
+} from "./cors.js";
 import {
   getEnabledRoutes,
   getRewritePrefix,
@@ -75,13 +81,23 @@ function upstreamErrorDetail(error: unknown, target: string): string {
   return `Could not connect to ${target}`;
 }
 
+function forwardedProto(request: FastifyRequest): string {
+  const header = request.headers["x-forwarded-proto"];
+
+  if (typeof header === "string" && header.length > 0) {
+    return header.split(",")[0].trim();
+  }
+
+  return request.protocol;
+}
+
 async function proxyHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
   const pathname = request.url.split("?")[0];
 
-  if (isReservedPath(pathname) || request.method === "OPTIONS") {
+  if (isReservedPath(pathname)) {
     return;
   }
 
@@ -89,6 +105,13 @@ async function proxyHandler(
 
   if (!route) {
     return;
+  }
+
+  const corsOrigin = resolveCorsOrigin(route, request);
+
+  if (corsOrigin && request.method === "OPTIONS") {
+    applyCorsHeaders(reply, request, corsOrigin);
+    return reply.code(204).send();
   }
 
   const upstream = buildUpstreamUrl(request, route);
@@ -101,10 +124,17 @@ async function proxyHandler(
           ? `${headers["x-forwarded-for"]}, ${request.ip}`
           : request.ip,
       ),
-      "x-forwarded-proto": request.protocol,
+      "x-forwarded-proto": forwardedProto(request),
       "x-forwarded-host": String(request.headers.host ?? ""),
       "x-forwarded-prefix": route.stripPrefix ? route.path : "",
     }),
+    rewriteHeaders(headers: IncomingHttpHeaders): IncomingHttpHeaders {
+      if (!corsOrigin) {
+        return headers;
+      }
+
+      return mergeCorsResponseHeaders(headers, corsOrigin);
+    },
     onError(_reply, { error }) {
       const detail = upstreamErrorDetail(error, route.target);
 
