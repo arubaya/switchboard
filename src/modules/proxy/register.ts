@@ -13,6 +13,7 @@ import {
   getEnabledRoutes,
   getRewritePrefix,
   resolveTargetHost,
+  rewriteLocationForStripPrefix,
   sortRoutesBySpecificity,
 } from "./utils.js";
 
@@ -132,14 +133,27 @@ async function proxyHandler(
       ),
       "x-forwarded-proto": forwardedProto(request),
       "x-forwarded-host": String(request.headers.host ?? ""),
-      "x-forwarded-prefix": route.stripPrefix ? route.path : "",
     }),
     rewriteHeaders(headers: IncomingHttpHeaders): IncomingHttpHeaders {
-      if (!corsOrigin) {
-        return headers;
+      let next = headers;
+
+      if (route.stripPrefix && next.location) {
+        next = {
+          ...next,
+          location: rewriteLocationForStripPrefix(
+            String(next.location),
+            route.path,
+            request.headers.host,
+            forwardedProto(request),
+          ),
+        };
       }
 
-      return mergeCorsResponseHeaders(headers, corsOrigin);
+      if (corsOrigin) {
+        next = mergeCorsResponseHeaders(next, corsOrigin);
+      }
+
+      return next;
     },
     onError(_reply, { error }) {
       const detail = upstreamErrorDetail(error, route.target);
