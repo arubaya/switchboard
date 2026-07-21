@@ -75,7 +75,34 @@ async function proxyHandler(
     return;
   }
 
-  await reply.from(buildUpstreamUrl(request, route));
+  const upstream = buildUpstreamUrl(request, route);
+
+  await reply.from(upstream, {
+    onError(_reply, { error }) {
+      const detail =
+        error.message ||
+        ("code" in error && typeof error.code === "string" ? error.code : "") ||
+        `Could not connect to ${route.target}`;
+
+      request.log.error(
+        { err: error, upstream, routeId: route.id, target: route.target },
+        "Upstream proxy failed",
+      );
+
+      if (!_reply.sent) {
+        _reply.code(502).send({
+          error: "Bad Gateway",
+          message: detail,
+          upstream,
+          hint:
+            route.target.includes("localhost") ||
+            route.target.includes("127.0.0.1")
+              ? "From Docker, use host.docker.internal instead of localhost"
+              : undefined,
+        });
+      }
+    },
+  });
 }
 
 const proxyPlugin = fp(
