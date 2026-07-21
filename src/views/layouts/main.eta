@@ -1,0 +1,15 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="UTF-8" />
+
+    <title><%= it.title %></title>
+
+    <link rel="stylesheet" href="/public/css/output.css" />
+  </head>
+
+  <body class="bg-gray-100">
+    <~ it.body ~>
+  </body>
+</html>

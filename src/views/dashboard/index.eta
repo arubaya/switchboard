@@ -1,0 +1,9 @@
+<% layout("layouts/main") %>
+
+<div class="min-h-screen flex items-center justify-center">
+  <div class="bg-white rounded-xl shadow p-8">
+    <h1 class="text-3xl font-bold">🚦 Switchboard</h1>
+
+    <p class="mt-3 text-gray-500">Dashboard running.</p>
+  </div>
+</div>
