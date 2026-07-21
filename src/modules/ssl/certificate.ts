@@ -1,6 +1,5 @@
 import { readFile } from "node:fs/promises";
 import {
-  createPrivateKey,
   createPublicKey,
   timingSafeEqual,
   X509Certificate,
@@ -124,12 +123,8 @@ async function certificateMatchesKey(
   keyPem: string,
 ): Promise<boolean> {
   const cert = new X509Certificate(certPem);
-  const privateKey = createPrivateKey(keyPem);
   const certPublicKey = cert.publicKey.export({ type: "spki", format: "der" });
-  const privateKeyPem = privateKey.export({ type: "pkcs8", format: "pem" });
-  const privatePublicKey = createPublicKey(
-    typeof privateKeyPem === "string" ? privateKeyPem : privateKeyPem.toString(),
-  ).export({
+  const privatePublicKey = createPublicKey(keyPem).export({
     type: "spki",
     format: "der",
   });
