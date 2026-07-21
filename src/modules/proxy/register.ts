@@ -115,8 +115,14 @@ async function proxyHandler(
   }
 
   const upstream = buildUpstreamUrl(request, route);
+  const forwardBody =
+    request.body !== undefined &&
+    request.body !== null &&
+    request.method !== "GET" &&
+    request.method !== "HEAD";
 
-  await reply.from(upstream, {
+  return reply.from(upstream, {
+    ...(forwardBody ? { body: request.body } : {}),
     rewriteRequestHeaders: (_request, headers) => ({
       ...headers,
       "x-forwarded-for": String(
@@ -157,7 +163,7 @@ async function proxyHandler(
 const proxyPlugin = fp(
   async (app) => {
     await app.register(replyFrom);
-    app.addHook("onRequest", proxyHandler);
+    app.addHook("preHandler", proxyHandler);
   },
   { name: "switchboard-proxy" },
 );
