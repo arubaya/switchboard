@@ -4,6 +4,7 @@ import { createServer as createHttpsServer } from "node:https";
 import type { FastifyInstance } from "fastify";
 
 import type { AppConfig } from "../modules/config/schemas.js";
+import { assertCanBindPort, wrapListenError } from "./bind-port.js";
 import { sslStore } from "../modules/ssl/ssl-store.js";
 import { sslProviders } from "../modules/ssl/providers/index.js";
 import type { SslConfig } from "../modules/ssl/schemas.js";
@@ -68,6 +69,8 @@ export async function startRuntime(
   await app.ready();
 
   if (!sslConfig.enabled) {
+    assertCanBindPort(appConfig.port);
+
     await app.listen({
       host: appConfig.host,
       port: appConfig.port,
@@ -95,13 +98,20 @@ export async function startRuntime(
     handler.emit("request", request, response);
   });
 
+  assertCanBindPort(sslConfig.httpPort);
+  assertCanBindPort(sslConfig.httpsPort);
+
   await new Promise<void>((resolve, reject) => {
-    httpServer.once("error", reject);
+    httpServer.once("error", (error) =>
+      reject(wrapListenError(error, sslConfig.httpPort)),
+    );
     httpServer.listen(sslConfig.httpPort, appConfig.host, () => resolve());
   });
 
   await new Promise<void>((resolve, reject) => {
-    httpsServer.once("error", reject);
+    httpsServer.once("error", (error) =>
+      reject(wrapListenError(error, sslConfig.httpsPort)),
+    );
     httpsServer.listen(sslConfig.httpsPort, appConfig.host, () => resolve());
   });
 

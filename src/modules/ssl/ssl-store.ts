@@ -1,5 +1,10 @@
 import { readFile, writeFile } from "node:fs/promises";
 
+import {
+  canBindPrivilegedPort,
+  isPrivilegedPort,
+  privilegedPortMessage,
+} from "../../shared/bind-port.js";
 import { sslConfigPath } from "../../shared/paths.js";
 import { readCertificateMetadata } from "./certificate.js";
 import { sslProviders } from "./providers/index.js";
@@ -80,6 +85,12 @@ export class SslStore {
 
     if (config.enabled && config.httpPort === config.httpsPort) {
       errors.push("HTTP and HTTPS ports must be different");
+    }
+
+    for (const port of [config.httpPort, config.httpsPort]) {
+      if (config.enabled && isPrivilegedPort(port) && !canBindPrivilegedPort()) {
+        errors.push(privilegedPortMessage(port));
+      }
     }
 
     const provider = sslProviders.get(config.provider);
