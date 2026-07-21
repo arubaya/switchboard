@@ -9,7 +9,7 @@ import {
   sortRoutesBySpecificity,
 } from "./utils.js";
 
-const RESERVED_PATHS = ["/health", "/api/routes", "/public"];
+const RESERVED_PATHS = ["/health", "/api/routes", "/public", "/logout"];
 
 const proxyState = {
   routes: [] as Route[],

@@ -1,33 +1,4 @@
-<header class="border-b border-slate-200 bg-white">
-  <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-    <div class="flex items-center gap-3">
-      <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-lg text-white">
-        S
-      </div>
-      <div>
-        <h1 class="text-lg font-semibold tracking-tight">Switchboard</h1>
-        <p class="text-sm text-slate-500">Reverse proxy routing manager</p>
-      </div>
-    </div>
-
-    <div class="flex items-center gap-3">
-      <span
-        id="route-count"
-        class="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 sm:inline"
-      >
-        0 routes
-      </span>
-      <a
-        href="/health"
-        target="_blank"
-        rel="noreferrer"
-        class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
-      >
-        Health
-      </a>
-    </div>
-  </div>
-</header>
+<%~ include("../partials/navbar", it) %>
 
 <main class="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
   <div
@@ -154,3 +125,84 @@
     </div>
   </section>
 </main>
+
+<div
+  id="edit-modal"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 p-4"
+  aria-hidden="true"
+>
+  <div
+    class="w-full max-w-lg rounded-xl border border-slate-200 bg-white shadow-xl"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="edit-modal-title"
+  >
+    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+      <h3 id="edit-modal-title" class="text-base font-semibold">Edit route</h3>
+      <button
+        id="edit-modal-close"
+        type="button"
+        class="rounded-lg px-2 py-1 text-slate-500 hover:bg-slate-100"
+        aria-label="Close"
+      >
+        ✕
+      </button>
+    </div>
+
+    <form id="edit-route-form" class="space-y-4 p-5">
+      <label class="block text-sm">
+        <span class="mb-1.5 block font-medium text-slate-700">ID</span>
+        <input
+          name="id"
+          readonly
+          class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500"
+        />
+      </label>
+
+      <label class="block text-sm">
+        <span class="mb-1.5 block font-medium text-slate-700">Path</span>
+        <input
+          name="path"
+          required
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none ring-slate-300 focus:border-slate-400 focus:ring-2"
+        />
+      </label>
+
+      <label class="block text-sm">
+        <span class="mb-1.5 block font-medium text-slate-700">Target URL</span>
+        <input
+          name="target"
+          required
+          type="url"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none ring-slate-300 focus:border-slate-400 focus:ring-2"
+        />
+      </label>
+
+      <label class="flex items-center gap-2 text-sm text-slate-700">
+        <input name="enabled" type="checkbox" class="h-4 w-4 rounded border-slate-300" />
+        <span>Enabled</span>
+      </label>
+
+      <label class="flex items-center gap-2 text-sm text-slate-700">
+        <input name="stripPrefix" type="checkbox" class="h-4 w-4 rounded border-slate-300" />
+        <span>Strip prefix when forwarding</span>
+      </label>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button
+          id="edit-modal-cancel"
+          type="button"
+          class="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+        >
+          Save changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

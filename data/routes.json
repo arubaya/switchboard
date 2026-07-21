@@ -1,3 +1,11 @@
 {
-  "routes": []
+  "routes": [
+    {
+      "id": "simkopdes-api",
+      "enabled": true,
+      "path": "/simkopdes-apis",
+      "target": "http://localhost:8000",
+      "stripPrefix": true
+    }
+  ]
 }

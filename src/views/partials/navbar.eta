@@ -1,0 +1,69 @@
+<header class="border-b border-slate-200 bg-white">
+  <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+    <div class="flex items-center gap-3">
+      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-lg text-white">
+        S
+      </div>
+      <div>
+        <h1 class="text-lg font-semibold tracking-tight">Switchboard</h1>
+        <p class="hidden text-sm text-slate-500 sm:block">Reverse proxy routing manager</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 sm:gap-3">
+      <span
+        id="route-count"
+        class="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 sm:inline"
+      >
+        0 routes
+      </span>
+      <a
+        href="/logout"
+        class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+      >
+        Logout
+      </a>
+    </div>
+  </div>
+
+  <nav class="border-t border-slate-100 bg-white">
+    <div class="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 sm:px-6">
+      <a
+        href="/"
+        class="<%= it.activeNav === 'routes' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700' %> whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium"
+      >
+        Routes
+      </a>
+
+      <span
+        class="flex cursor-not-allowed items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3 py-3 text-sm text-slate-400"
+        title="Coming soon"
+      >
+        Health Checks
+        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+          Soon
+        </span>
+      </span>
+
+      <span
+        class="flex cursor-not-allowed items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3 py-3 text-sm text-slate-400"
+        title="Coming soon"
+      >
+        Access Logs
+        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+          Soon
+        </span>
+      </span>
+
+      <span
+        class="flex cursor-not-allowed items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3 py-3 text-sm text-slate-400"
+        title="Coming soon"
+      >
+        Settings
+        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+          Soon
+        </span>
+      </span>
+    </div>
+  </nav>
+</header>

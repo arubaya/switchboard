@@ -3,9 +3,15 @@ const routesTableWrap = document.getElementById("routes-table-wrap");
 const routesEmpty = document.getElementById("routes-empty");
 const routesLoading = document.getElementById("routes-loading");
 const routeForm = document.getElementById("route-form");
+const editRouteForm = document.getElementById("edit-route-form");
+const editModal = document.getElementById("edit-modal");
+const editModalClose = document.getElementById("edit-modal-close");
+const editModalCancel = document.getElementById("edit-modal-cancel");
 const refreshButton = document.getElementById("refresh-routes");
 const alertBox = document.getElementById("alert");
 const routeCount = document.getElementById("route-count");
+
+let cachedRoutes = [];
 
 function escapeHtml(value) {
   return String(value)
@@ -65,7 +71,27 @@ function statusBadge(enabled) {
     : '<span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">Disabled</span>';
 }
 
+function openEditModal(route) {
+  editRouteForm.elements.id.value = route.id;
+  editRouteForm.elements.path.value = route.path;
+  editRouteForm.elements.target.value = route.target;
+  editRouteForm.elements.enabled.checked = route.enabled;
+  editRouteForm.elements.stripPrefix.checked = route.stripPrefix;
+
+  editModal.classList.remove("hidden");
+  editModal.classList.add("flex");
+  editModal.setAttribute("aria-hidden", "false");
+}
+
+function closeEditModal() {
+  editModal.classList.add("hidden");
+  editModal.classList.remove("flex");
+  editModal.setAttribute("aria-hidden", "true");
+  editRouteForm.reset();
+}
+
 function renderRoutes(routes) {
+  cachedRoutes = routes;
   routesTable.innerHTML = "";
   updateRouteCount(routes.length);
 
@@ -90,6 +116,14 @@ function renderRoutes(routes) {
       <td class="px-5 py-3 text-slate-600 sm:px-6">${route.stripPrefix ? "Yes" : "No"}</td>
       <td class="px-5 py-3 sm:px-6">
         <div class="flex flex-wrap gap-2">
+          <button
+            type="button"
+            data-action="edit"
+            data-id="${escapeHtml(route.id)}"
+            class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100"
+          >
+            Edit
+          </button>
           <button
             type="button"
             data-action="toggle"
@@ -158,6 +192,36 @@ routeForm.addEventListener("submit", async (event) => {
   }
 });
 
+editRouteForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  clearAlert();
+
+  const formData = new FormData(editRouteForm);
+  const id = String(formData.get("id"));
+  const submitButton = editRouteForm.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+
+  try {
+    await api(`/api/routes/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        path: String(formData.get("path")),
+        target: String(formData.get("target")),
+        enabled: formData.has("enabled"),
+        stripPrefix: formData.has("stripPrefix"),
+      }),
+    });
+
+    closeEditModal();
+    showAlert("Route updated successfully.", "success");
+    await loadRoutes();
+  } catch (error) {
+    showAlert(error.message);
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+
 routesTable.addEventListener("click", async (event) => {
   const button = event.target.closest("button[data-action]");
 
@@ -169,6 +233,16 @@ routesTable.addEventListener("click", async (event) => {
   const action = button.dataset.action;
 
   try {
+    if (action === "edit") {
+      const route = cachedRoutes.find((item) => item.id === id);
+
+      if (route) {
+        openEditModal(route);
+      }
+
+      return;
+    }
+
     if (action === "delete") {
       if (!confirm(`Delete route "${id}"?`)) {
         return;
@@ -179,8 +253,7 @@ routesTable.addEventListener("click", async (event) => {
     }
 
     if (action === "toggle") {
-      const data = await api("/api/routes");
-      const route = data.routes.find((item) => item.id === id);
+      const route = cachedRoutes.find((item) => item.id === id);
 
       if (!route) {
         return;
@@ -197,6 +270,21 @@ routesTable.addEventListener("click", async (event) => {
     await loadRoutes();
   } catch (error) {
     showAlert(error.message);
+  }
+});
+
+editModalClose.addEventListener("click", closeEditModal);
+editModalCancel.addEventListener("click", closeEditModal);
+
+editModal.addEventListener("click", (event) => {
+  if (event.target === editModal) {
+    closeEditModal();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !editModal.classList.contains("hidden")) {
+    closeEditModal();
   }
 });
 
