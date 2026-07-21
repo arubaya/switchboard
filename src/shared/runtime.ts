@@ -5,6 +5,7 @@ import type { FastifyInstance } from "fastify";
 
 import type { AppConfig } from "../modules/config/schemas.js";
 import { assertCanBindPort, wrapListenError } from "./bind-port.js";
+import { readCertificateMetadata } from "../modules/ssl/certificate.js";
 import { sslStore } from "../modules/ssl/ssl-store.js";
 import { sslProviders } from "../modules/ssl/providers/index.js";
 import type { SslConfig } from "../modules/ssl/schemas.js";
@@ -59,19 +60,22 @@ export async function startRuntime(
     };
   }
 
-  const tlsOptions = await loadTlsOptions(sslConfig);
+  const provider = sslProviders.get(sslConfig.provider);
+  const paths = provider.resolvePaths(sslConfig);
+  const metadata = await readCertificateMetadata(
+    paths?.certificatePath ?? null,
+    paths?.privateKeyPath ?? null,
+  );
+  const tlsReady =
+    metadata.certificateExists && metadata.privateKeyExists;
+
   const handler = app.server;
 
   const httpServer = createHttpServer((request, response) => {
     handler.emit("request", request, response);
   });
 
-  const httpsServer = createHttpsServer(tlsOptions, (request, response) => {
-    handler.emit("request", request, response);
-  });
-
   assertCanBindPort(sslConfig.httpPort);
-  assertCanBindPort(sslConfig.httpsPort);
 
   await new Promise<void>((resolve, reject) => {
     httpServer.once("error", (error) =>
@@ -80,6 +84,29 @@ export async function startRuntime(
     httpServer.listen(sslConfig.httpPort, appConfig.host, () => resolve());
   });
 
+  app.log.info(`http://${appConfig.host}:${sslConfig.httpPort}`);
+
+  if (!tlsReady) {
+    app.log.warn(
+      "HTTPS is enabled but certificate files are missing — running HTTP only until a certificate is issued",
+    );
+
+    return {
+      close: async () => {
+        await closeServer(httpServer);
+        await app.close();
+      },
+    };
+  }
+
+  const tlsOptions = await loadTlsOptions(sslConfig);
+
+  const httpsServer = createHttpsServer(tlsOptions, (request, response) => {
+    handler.emit("request", request, response);
+  });
+
+  assertCanBindPort(sslConfig.httpsPort);
+
   await new Promise<void>((resolve, reject) => {
     httpsServer.once("error", (error) =>
       reject(wrapListenError(error, sslConfig.httpsPort)),
@@ -87,7 +114,6 @@ export async function startRuntime(
     httpsServer.listen(sslConfig.httpsPort, appConfig.host, () => resolve());
   });
 
-  app.log.info(`http://${appConfig.host}:${sslConfig.httpPort}`);
   app.log.info(`https://${appConfig.host}:${sslConfig.httpsPort}`);
 
   return {
