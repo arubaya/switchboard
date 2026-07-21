@@ -94,6 +94,17 @@ async function proxyHandler(
   const upstream = buildUpstreamUrl(request, route);
 
   await reply.from(upstream, {
+    rewriteRequestHeaders: (_request, headers) => ({
+      ...headers,
+      "x-forwarded-for": String(
+        headers["x-forwarded-for"]
+          ? `${headers["x-forwarded-for"]}, ${request.ip}`
+          : request.ip,
+      ),
+      "x-forwarded-proto": request.protocol,
+      "x-forwarded-host": String(request.headers.host ?? ""),
+      "x-forwarded-prefix": route.stripPrefix ? route.path : "",
+    }),
     onError(_reply, { error }) {
       const detail = upstreamErrorDetail(error, route.target);
 
