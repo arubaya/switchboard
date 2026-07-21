@@ -45,12 +45,15 @@ function updateRouteCount(count) {
 }
 
 async function api(path, options = {}) {
+  const headers = { ...(options.headers ?? {}) };
+
+  if (options.body) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const response = await fetch(path, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers ?? {}),
-    },
     ...options,
+    headers,
   });
 
   if (!response.ok) {
