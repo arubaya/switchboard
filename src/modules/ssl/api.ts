@@ -56,7 +56,8 @@ export default async function sslApi(app: FastifyInstance) {
 
   app.post("/api/ssl/request", async (request, reply) => {
     try {
-      const config = sslStore.get();
+      const patch = SslConfigPatchSchema.parse(request.body ?? {});
+      const config = await sslStore.savePendingCertificateRequest(patch);
 
       if (config.provider !== "letsencrypt") {
         return reply

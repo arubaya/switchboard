@@ -64,6 +64,29 @@ export class SslStore {
     return this.save(merged);
   }
 
+  async savePendingCertificateRequest(
+    input: Partial<SslConfig>,
+  ): Promise<SslConfig> {
+    SslConfigPatchSchema.parse(input);
+
+    const config = SslConfigSchema.parse({
+      ...this.get(),
+      ...input,
+      custom: {
+        ...this.get().custom,
+        ...input.custom,
+      },
+      letsencrypt: {
+        ...this.get().letsencrypt,
+        ...input.letsencrypt,
+      },
+    });
+
+    this.config = config;
+    await writeFile(sslConfigPath, `${JSON.stringify(config, null, 2)}\n`);
+    return this.get();
+  }
+
   async getStatus(): Promise<CertificateStatus> {
     const config = this.get();
     const provider = sslProviders.get(config.provider);

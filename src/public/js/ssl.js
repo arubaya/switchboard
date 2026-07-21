@@ -249,12 +249,10 @@ requestCertButton.addEventListener("click", async () => {
   clearAlert();
 
   try {
-    await api("/api/ssl", {
-      method: "PATCH",
+    const response = await api("/api/ssl/request", {
+      method: "POST",
       body: JSON.stringify(readFormConfig()),
     });
-
-    const response = await api("/api/ssl/request", { method: "POST", body: "{}" });
     await handleRestartResponse(response.message);
   } catch (error) {
     showAlert(error.message);
