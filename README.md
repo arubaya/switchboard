@@ -12,8 +12,52 @@ Reverse proxy ringan dengan dashboard web. Kelola route upstream, SSL/TLS, dan u
 
 ## Persyaratan
 
-- Node.js 18+
+- Node.js 18+ (untuk install manual)
 - npm
+- Docker & Docker Compose (opsional)
+
+## Docker
+
+Cara paling cepat untuk production:
+
+```bash
+docker compose up -d --build
+```
+
+Dashboard: `http://localhost:8080`
+
+### Port
+
+| Port | Fungsi |
+|------|--------|
+| 8080 | HTTP default (non-SSL) |
+| 8443 | HTTPS default |
+| 80 | HTTP — Let's Encrypt HTTP-01 |
+| 443 | HTTPS production |
+
+Container pakai `NET_BIND_SERVICE` supaya bisa bind port 80/443 tanpa root.
+
+### Data persisten
+
+Config dan sertifikat disimpan di `./data` via volume mount. Backup folder ini secara berkala.
+
+### Upstream dari container
+
+`localhost` di dalam container bukan host machine. Untuk service di host:
+
+- **macOS / Windows:** `http://host.docker.internal:3000`
+- **Linux:** tambahkan ke compose:
+  ```yaml
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  ```
+- **Service lain di compose:** pakai nama service, mis. `http://api:3000`
+
+### Let's Encrypt
+
+1. Pastikan domain mengarah ke server
+2. Port 80 & 443 terbuka ke container
+3. Set `httpPort: 80` di `/ssl` sebelum request sertifikat
 
 ## Instalasi
 
@@ -125,7 +169,8 @@ Route proxy tidak akan menimpa path berikut:
 | `npm run dev` | Dev server (`tsx watch`) |
 | `npm run build` | Compile TypeScript → `dist/` |
 | `npm start` | Jalankan production build |
-| `npm run css` | Compile Tailwind CSS |
+| `npm run css` | Compile Tailwind CSS (watch) |
+| `npm run css:build` | Compile Tailwind CSS (production) |
 
 ## Struktur
 
