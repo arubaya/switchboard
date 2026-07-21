@@ -34,32 +34,6 @@ async function loadTlsOptions(
   return { key, cert };
 }
 
-export function registerSslRedirect(app: FastifyInstance, config: SslConfig) {
-  if (!config.enabled || !config.redirectHttpToHttps) {
-    return;
-  }
-
-  app.addHook("onRequest", async (request, reply) => {
-    const pathname = request.url.split("?")[0];
-
-    if (pathname.startsWith("/.well-known/acme-challenge/")) {
-      return;
-    }
-
-    const socket = request.raw.socket as { encrypted?: boolean };
-    const isHttps = Boolean(socket.encrypted) || request.protocol === "https";
-
-    if (isHttps) {
-      return;
-    }
-
-    const host = request.headers.host?.split(":")[0] ?? request.hostname;
-    const target = `https://${host}:${config.httpsPort}${request.url}`;
-
-    return reply.redirect(target);
-  });
-}
-
 export async function startRuntime(
   app: FastifyInstance,
   appConfig: AppConfig,
@@ -84,8 +58,6 @@ export async function startRuntime(
       },
     };
   }
-
-  registerSslRedirect(app, sslConfig);
 
   const tlsOptions = await loadTlsOptions(sslConfig);
   const handler = app.server;
