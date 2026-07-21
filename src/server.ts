@@ -1,7 +1,8 @@
-import { buildApp } from "./app";
-import appConfig from "../data/app.json";
+import { buildApp } from "./app.js";
+import { loadAppConfig } from "./modules/config/loader.js";
 
 async function bootstrap() {
+  const appConfig = await loadAppConfig();
   const app = await buildApp();
 
   try {
@@ -10,8 +11,8 @@ async function bootstrap() {
       port: appConfig.port,
     });
 
-    app.log.info(`🚀 Switchboard started`);
-    app.log.info(`🌐 http://${appConfig.host}:${appConfig.port}`);
+    app.log.info("Switchboard started");
+    app.log.info(`http://${appConfig.host}:${appConfig.port}`);
   } catch (error) {
     app.log.error(error);
     process.exit(1);

@@ -1,9 +1,11 @@
 import Fastify from "fastify";
 
-import viewPlugin from "./plugins/view";
-import staticPlugin from "./plugins/static";
+import viewPlugin from "./plugins/view.js";
+import staticPlugin from "./plugins/static.js";
+import authPlugin from "./plugins/auth.js";
 
-import dashboardRoutes from "./dashboard/routes";
+import dashboardModule from "./modules/dashboard/index.js";
+import proxyModule from "./modules/proxy/index.js";
 
 export async function buildApp() {
   const app = Fastify({
@@ -24,16 +26,13 @@ export async function buildApp() {
     };
   });
 
-  /**
-   * Register plugins
-   */
   await app.register(viewPlugin);
   await app.register(staticPlugin);
+  await app.register(authPlugin);
 
-  /**
-   * Register routes
-   */
-  await app.register(dashboardRoutes);
+  // Dashboard API must register before proxy to avoid path conflicts.
+  await app.register(dashboardModule);
+  await app.register(proxyModule);
 
   return app;
 }

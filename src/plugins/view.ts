@@ -9,7 +9,10 @@ const eta = new Eta({
 });
 
 export default fp(async (app) => {
+  const viewsRoot = path.join(process.cwd(), "src/views");
+
   await app.register(fastifyView, {
+    root: viewsRoot,
     engine: {
       eta,
     },
