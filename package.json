@@ -17,9 +17,11 @@
   "dependencies": {
     "@fastify/basic-auth": "^6.2.0",
     "@fastify/http-proxy": "^11.6.0",
+    "@fastify/multipart": "^10.1.0",
     "@fastify/static": "^10.1.0",
     "@fastify/view": "^12.0.0",
     "acme-client": "^5.4.0",
+    "archiver": "^8.0.0",
     "chokidar": "^5.0.0",
     "eta": "^4.6.0",
     "fastify": "^5.10.0",

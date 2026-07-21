@@ -85,6 +85,12 @@ export class RoutesStore {
     this.routes = parseRoutes(data, log);
     return this.getAll();
   }
+
+  async restore(routes: Route[]): Promise<Route[]> {
+    this.routes = routes;
+    await this.persist();
+    return this.getAll();
+  }
 }
 
 export const routesStore = new RoutesStore();

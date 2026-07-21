@@ -82,6 +82,18 @@ export class SslStore {
     return this.get();
   }
 
+  async restore(config: SslConfig): Promise<SslConfig> {
+    const parsed = SslConfigSchema.parse(config);
+
+    if (parsed.enabled && parsed.httpPort === parsed.httpsPort) {
+      throw new Error("HTTP and HTTPS ports must be different");
+    }
+
+    this.config = parsed;
+    await writeFile(sslConfigPath, `${JSON.stringify(parsed, null, 2)}\n`);
+    return this.get();
+  }
+
   async getStatus(): Promise<CertificateStatus> {
     const config = this.get();
     const provider = sslProviders.get(config.provider);

@@ -11,3 +11,17 @@
       >
         Users
       </a>
+
+      <a
+        href="/settings/backup"
+        class="<%= it.settingsTab === 'backup' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700' %> whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium"
+      >
+        Backup
+      </a>
+
+      <a
+        href="/settings/restore"
+        class="<%= it.settingsTab === 'restore' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700' %> whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium"
+      >
+        Restore
+      </a>

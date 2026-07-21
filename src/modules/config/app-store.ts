@@ -31,6 +31,11 @@ export class AppConfigStore {
 
     return this.get();
   }
+
+  async reloadFromDisk(): Promise<AppConfig> {
+    this.config = await loadAppConfig();
+    return this.get();
+  }
 }
 
 export const appConfigStore = new AppConfigStore();

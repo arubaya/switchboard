@@ -101,6 +101,13 @@ export class UsersStore {
     this.users = data.users;
     return this.getAll();
   }
+
+  async restore(config: { users: User[] }): Promise<User[]> {
+    const parsed = UsersConfigSchema.parse(config);
+    this.users = parsed.users;
+    await this.persist();
+    return this.getAll();
+  }
 }
 
 export const usersStore = new UsersStore();
