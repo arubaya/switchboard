@@ -22,6 +22,7 @@ const RESERVED_PATHS = [
   "/api/routes",
   "/api/settings",
   "/api/ssl",
+  "/api/version",
   "/public",
   "/logout",
   "/settings",

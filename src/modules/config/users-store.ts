@@ -3,6 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { loadUsersConfig } from "./loader.js";
 import { UserSchema, UsersConfigSchema, type User } from "./schemas.js";
 import { usersConfigPath } from "../../shared/paths.js";
+import { CURRENT_SCHEMA_VERSION } from "../../shared/schema-version.js";
 
 export class UsersStore {
   private users: User[] = [];
@@ -88,7 +89,10 @@ export class UsersStore {
   }
 
   private async persist(): Promise<void> {
-    const payload = UsersConfigSchema.parse({ users: this.users });
+    const payload = UsersConfigSchema.parse({
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      users: this.users,
+    });
     await writeFile(
       usersConfigPath,
       `${JSON.stringify(payload, null, 2)}\n`,

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { CURRENT_SCHEMA_VERSION } from "../../shared/schema-version.js";
+
 export const CustomProviderSchema = z.object({
   certificatePath: z.string(),
   privateKeyPath: z.string(),
@@ -13,6 +15,7 @@ export const LetsEncryptProviderSchema = z.object({
 });
 
 export const SslConfigSchema = z.object({
+  schemaVersion: z.number().int().positive().default(CURRENT_SCHEMA_VERSION),
   enabled: z.boolean().default(false),
   httpPort: z.coerce.number().int().min(1).max(65535).default(8080),
   httpsPort: z.coerce.number().int().min(1).max(65535).default(8443),

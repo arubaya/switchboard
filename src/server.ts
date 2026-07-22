@@ -1,5 +1,3 @@
-import type { FastifyInstance } from "fastify";
-
 import { buildApp } from "./app.js";
 import { appConfigStore } from "./modules/config/app-store.js";
 import { sslStore } from "./modules/ssl/ssl-store.js";

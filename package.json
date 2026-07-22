@@ -1,19 +1,38 @@
 {
   "name": "switchboard",
   "version": "1.0.0",
+  "description": "Lightweight reverse proxy with a web dashboard",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/server.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arubaya/switchboard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/arubaya/switchboard/issues"
+  },
+  "homepage": "https://github.com/arubaya/switchboard#readme",
+  "keywords": [
+    "reverse-proxy",
+    "fastify",
+    "ssl",
+    "letsencrypt",
+    "dashboard"
+  ],
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "lint": "eslint .",
+    "test": "npm run build && node --test dist/shared/version.test.js",
     "css": "tailwindcss -i ./src/public/css/input.css -o ./src/public/css/output.css --watch",
     "css:build": "tailwindcss -i ./src/public/css/input.css -o ./src/public/css/output.css --minify"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "arubaya",
   "dependencies": {
     "@fastify/basic-auth": "^6.2.0",
     "@fastify/http-proxy": "^11.6.0",

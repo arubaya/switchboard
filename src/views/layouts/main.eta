@@ -6,8 +6,24 @@
     <title><%= it.title %></title>
     <link rel="stylesheet" href="/public/css/output.css" />
   </head>
-  <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
-    <%~ it.body %>
+  <body class="flex min-h-screen flex-col bg-slate-50 text-slate-900 antialiased">
+    <div class="flex-1">
+      <%~ it.body %>
+    </div>
+    <footer class="border-t border-slate-200 bg-white">
+      <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 text-xs text-slate-500 sm:px-6">
+        <span>Switchboard</span>
+        <span>
+          v<%= it.appVersion %>
+          <% if (it.appBuild && it.appBuild !== "dev") { %>
+          · build <%= it.appBuild %>
+          <% } %>
+          <% if (it.appCommit) { %>
+          · <%= String(it.appCommit).slice(0, 7) %>
+          <% } %>
+        </span>
+      </div>
+    </footer>
     <% if (it.script) { %>
     <script src="<%= it.script %>" defer></script>
     <% } %>

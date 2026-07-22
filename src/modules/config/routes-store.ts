@@ -4,6 +4,7 @@ import type { FastifyBaseLogger } from "fastify";
 import { loadRoutesConfig, parseRoutes } from "./loader.js";
 import { RouteSchema, type Route } from "./schemas.js";
 import { routesConfigPath } from "../../shared/paths.js";
+import { CURRENT_SCHEMA_VERSION } from "../../shared/schema-version.js";
 
 export class RoutesStore {
   private routes: Route[] = [];
@@ -75,7 +76,10 @@ export class RoutesStore {
   }
 
   private async persist(): Promise<void> {
-    const payload = { routes: this.routes };
+    const payload = {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      routes: this.routes,
+    };
     await writeFile(routesConfigPath, `${JSON.stringify(payload, null, 2)}\n`);
   }
 

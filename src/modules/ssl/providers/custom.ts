@@ -1,6 +1,5 @@
 import { access } from "node:fs/promises";
 
-import type { SslConfig } from "../schemas.js";
 import { readCertificateMetadata } from "../certificate.js";
 import { resolveAllowedPath } from "../path-utils.js";
 import type { SslProvider } from "./types.js";
@@ -31,8 +30,8 @@ export const customProvider: SslProvider = {
       return errors;
     }
 
-    let certificatePath = "";
-    let privateKeyPath = "";
+    let certificatePath: string;
+    let privateKeyPath: string;
 
     try {
       certificatePath = resolveAllowedPath(config.custom.certificatePath);

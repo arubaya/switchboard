@@ -1,6 +1,9 @@
 import { z } from "zod";
 
+import { CURRENT_SCHEMA_VERSION } from "../../shared/schema-version.js";
+
 export const AppConfigSchema = z.object({
+  schemaVersion: z.number().int().positive().default(CURRENT_SCHEMA_VERSION),
   host: z.string().default("0.0.0.0"),
   port: z.coerce.number().int().positive().default(8080),
 });
@@ -11,6 +14,7 @@ export const UserSchema = z.object({
 });
 
 export const UsersConfigSchema = z.object({
+  schemaVersion: z.number().int().positive().default(CURRENT_SCHEMA_VERSION),
   users: z.array(UserSchema).min(1),
 });
 
@@ -24,6 +28,7 @@ export const RouteSchema = z.object({
 });
 
 export const RoutesConfigSchema = z.object({
+  schemaVersion: z.number().int().positive().default(CURRENT_SCHEMA_VERSION),
   routes: z.array(z.unknown()),
 });
 

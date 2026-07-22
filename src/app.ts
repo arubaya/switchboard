@@ -8,6 +8,7 @@ import dashboardModule from "./modules/dashboard/index.js";
 import settingsModule from "./modules/settings/index.js";
 import sslModule from "./modules/ssl/index.js";
 import proxyModule from "./modules/proxy/index.js";
+import { getVersionInfo } from "./shared/version.js";
 
 export async function buildApp() {
   const app = Fastify({
@@ -27,6 +28,8 @@ export async function buildApp() {
       service: "switchboard",
     };
   });
+
+  app.get("/api/version", async () => getVersionInfo());
 
   await app.register(viewPlugin);
   await app.register(staticPlugin);
